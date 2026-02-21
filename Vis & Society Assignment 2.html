@@ -1,0 +1,236 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<title>Vis & Society Assignment 2</title>
+	<link rel="stylesheet" href="https://vis-society.github.io/assignments/report.css" />
+</head>
+
+<body>
+	<header>
+		<h1>
+			<small>Assignment 2</small>
+			Exploratory Data Analysis
+		</h1>
+
+		<p>
+			<strong>Andrew Bogdan</strong> — <em>bogdana@mit.edu</em>
+		</p>
+	</header>
+	<main>
+		<section>
+			<h2>Subtheme: Speculation</h2>
+
+			<h3>Overall Analysis Questions</h3>
+			<ol>
+				<li>
+					How has the share of demand which is renters/home-buyers (as opposed to speculators/investors) changed over time?
+					<ul>
+						<li>
+							This is a basic introductory question; my hypothesis (based on the articles) is that it has decreased. I don't know yet how to quantify it, and I think attempting to quantify demand will be a valuable exploratory exercise.
+						</li>
+						<li>
+							<strong>Motivation</strong>: based on the readings (see 'Reckoning with Boston's Towers of Wealth'), I know this <em>is</em> a problem, but I want to know <em>how big</em> the problem is.
+						</li>
+					</ul>
+				</li>
+
+				<li>
+					What's the scale/distribution of buyers and renters? More specifically, are investors mostly large firms or single-time investments? What price-range are most buyers looking for?
+					<ul>
+						<li>
+							<strong>Motivation</strong>: I think this is an important question because it starts to build a better picture of who the stakeholders are, which is a good 'step 1' to solving a people problem like this.
+						</li>
+					</ul>
+				</li>
+
+				<li>
+					How far our of their price range have buyers been pushed, and which income levels are most out of their price range?
+					<ul>
+						<li>
+							This question will be hard to nail down; for example, I'm imagining giving everyone a home/apartment in order (cheapest homes to poorest people) and then seeing which income level has the most rent burden.
+						</li>
+						<li>
+							<strong>Motivation</strong>: I've heard (in person, from the Mass. Water Commission, actually) that there's a 'missing middle' in Mass. housing, but I'd like to confirm that for myself. I feel like the poor are probably still the most rent-burdened (that's intuitive, right?), and those two hypotheses seem to contradict.
+						</li>
+					</ul>
+				</li>
+			</ol>
+		</section>
+
+		<section>
+			<h2>Overview</h2>
+
+			<p>First, I like to go through the columns and see what jumps out. This is so that I (and you) can get a sense of what data we're working with. This is not exhaustive.</p>
+
+			<ul>
+			<li>Answering "who is buying/selling"
+				<ul>
+					<li><code>buyer_bnk_ind</code>, <code>buyer_bus_ind</code>, <code>buyer_gov_ind</code>, <code>buyer_gse_ind</code>, <code>buyer_llc_ind</code>, <code>buyer_trst_ind</code> — these indicate who is buying</li>
+					<li><code>seller_*</code>, same as above</li>
+					<li><code>buyer_purchases</code> — entities with a lot of properties are probably not living there; I could use this to measure monopolization
+						<ul>
+							<li><code>tot_owned</code> — similar</li>
+						</ul>
+					</li>
+					<li><code>inv_to_inv</code> — see transactions where people are totally cut out</li>
+					<li><code>investor_*</code></li>
+				</ul>
+			</li>
+			<li>Answering "what is getting bought"
+				<ul>
+					<li><code>proptype</code></li>
+					<li><code>style</code></li>
+					<li><code>usecode</code> — there are a lot of codes for industrial purposes. I really don't feel like sorting through these...</li>
+				</ul>
+			</li>
+			<li>Measuring "flips"
+				<ul>
+					<li><code>flip_horizon</code>, <code>flip_ind</code>, <code>flip_term</code></li>
+					<li><code>price_diff</code> — how much they made on the flip</li>
+				</ul>
+			</li>
+			<li>Answering "what actually is this data"
+				<ul>
+					<li><code>current_owner</code>: what does it mean for the buyer to be the current owner? I assumed these were transactions.</li>
+				</ul>
+			</li>
+			<li>Estimating cost burden
+				<ul>
+					<li><code>mortgage</code>, <code>price</code></li>
+				</ul>
+			</li>
+		</ul>
+
+			<figure>
+				<img src="Map.png" alt="" />
+				<figcaption>
+					This is a map plotting a most (but not all) of the data so you can see where it is we're dealing with. Larger sizes represent more expensive properties, but some properties are so much more expensive than others that it's hard to get more than a vague sense of scacle. The properties are color coded by who is buying them, whether an institution, a small/medium/large investor, or someone else. Excluded are properties on 'null island', the spot on the intersection between the equator and prime meridian where data without location information goes.
+				</figcaption>
+			</figure>
+
+			<figure>
+				<img src="Pasted image 20260220093533.png" alt="" />
+				<figcaption>
+				To get a sense of how the data in this set is distributed, I aggreageted into sections the <code>usage</code> codes (residential, mixed, temporary residential, and other) and the six buyer indicators (commerical, banks, government, other) into sections. This diagram shows all combinations of those categories and the total volume of sales within those categories as bubbles. Each bubble represents a kind of land use. The large purple circle is general-purpose offices, while the large green is condominiums. There are many (a hundred or so) groups, so they're not all listed.
+				</figcaption>
+			</figure>
+
+			<figure>
+				<img src="Investor Type 2.png" alt="" />
+				<figcaption>
+				I wanted to see relatively how much different kinds of investors were spending and I was confused about what the distinction between "investor type purchase count (ITPC)" and "investor type purchase value (ITPV)" were — I need one of them for my analysis, but they're subtly different and have the same metadata. I plotted ITPC on the Y axis and ITPV on the X. You'd expect, if they were the same data, you'd see most of the expenditure on the diagonal, but it's on the bottom. This indicates that ITPC is considering nearly everyone to be non-count investors. It looks like ITPV is the better metric, but without a real world connection, we can't be sure.
+				</figcaption>
+			</figure>
+
+			<figure>
+				<img src="Investor Type again.png" alt="" />
+				<figcaption>
+				Here we plot ITPV against <code>Investor Type Purchase</code> on the vertical axis, where the colors and sizes have the same meaning as the above chart. This shows that <code>Investor Type Purchase</code> might be an even better way to categorize who is or isn't an investor. From here on out, I'll use <code>Investor Type Purchase</code> to distinguish investors.
+				</figcaption>
+			</figure>
+
+		</section>
+
+		<section>
+			<h2>Discoveries & Insights</h2>
+			<h3>Question 1: How has the share of demand which is renters/home-buyers (as opposed to speculators/investors) changed over time?<h3>
+
+			<p>
+				This next chart is pretty simple, but the background for why I think it's appropriate isn't. In particular, there are the questions.
+
+				<ol>
+					<li> How do you decide what qualifies as an investor? My options were to use <code>investor_type_purchase</code> or the <code>buyer_*_ind</code>s. The buyer indicators overlap and there appears to be some missing data, while <code>investor_type_purchase</code> has less information but it seems to be more quality.</li>
+					<li> How do you decide which properties to include? We want to include residential properties, and again I have two options: <code>proptype</code> or <code>usecode</code>. I get more control over <code>usecode</code>`, but that creates room for errors in my analysis. Meanwhile <code>proptype</code> has some strangeness about it — storage condos count as residential, as do dorms, fraternities, and residential condo parking lots; I'm not sure that all of these are appropriate. <code>proptype</code> also encodes 'residential development land' as commercial, which <em>might</em> be okay — I'm not sure what to do with this.</li>
+				</ol>
+			</p>
+
+			<figure>
+				<img src="(1) Share of Demand.png" alt="" />
+				<figcaption>
+				This chart is plotting the percent of the residential housing cash flow from 2000 to 2022 organzied by if the buyer is a bank, for profit, or a human. Residential houses are distinguished based on their <code>proptype</code> code, whereas the buyer is distinguished based on the buyer indicator variables. Any missing data is lumped into 'Humans', so it's likely that htis plot over-estimates the share of demand from individuals.
+				</figcaption>
+			</figure>
+
+			<figure>
+				<img src="Share of Demand (Investor).png" alt="" />
+				<figcaption>
+				This is the same plot as above but investors are distinguised by the <code>Investor Type Purchase</code> code. This shows a much more dramatic effect, where around 50% of the demand is from investment. The overall shape of the graph looks similar to the above chart, so we can consider this a sensitive analysis. I think this is suggestive that on the order of 30% to 60% of the demand in housing is from investment, and that the share of investment demand is increasing over time.
+				</figcaption>
+			</figure>
+
+			<h3>Question 2: What's the scale/distribution of buyers and renters? More specifically, are investors mostly large firms or single-time investments? What price-range are most buyers looking for?</h3>
+
+			<figure>
+				<img src="2 Cumulative.png" alt="" />
+				<figcaption>
+				This is the cumulative proportion of the total money exchanged since 2000 divided up by the type of investor. The horizontal axis is the logarithm of price. The thickness of the line corresponds to the number of properties —  you can see that non-investors have a bunch of properties in the 1M +- 500k range.
+				</figcaption>
+			</figure>
+
+			<p>There's a lot that I'd like to add to this chart, but I'm reaching the limits of what I know how to do with Tableau. I want to create this chart in a one-year sliding window — the tip of the blue (non-investor) line should then match up exactly with the blue line in my 'Share of Demand (2)' chart. Additionally, I would like to add callouts for the 20th, 50th, and 80th percentiles, so we could compare more numerically the median or exceptional costs for each type of buyer. These would be the percentiles based on the cumulative count of addresses, not the cumulation value.</p>
+
+			<figure>
+				<img src="2 Count.png" alt="" />
+				<figcaption>
+				This chart is the same as the previous chart, except it accumulate the count of sales, rather than the total exchange volume, giving the cumulative distribution of the price of purchases in each category.
+				</figcaption>
+			</figure>
+
+			<p>I can use this chart to see that the median non-investment property is about $600k, the median small investment property is $800k, medium and large investment firms is about $1M, and (bizarrely) the median property for an institutional firm is only $600k. These are estimates based on mousing over the line — not actual calculations. However, this still roughly indicates that the median property value doesn't change a lot across types of buyers, but the average value does.</p>
+
+			<p>To actually answer the question, investors tend to buy larger properties according to the scale of the investor. The vast majority of properties are purchased by non-investors, but the properties are worth less on average than those purchased by investment firms. This effect is created by investment firms having a much greater variance in the value of their properties — the median values across all categories are quite similar, but the larger an investors is, the larger their outlier properties are (they can be many orders of magnitude larger). Most investors are small, and indeed most total investment happens by the smaller firms. Non-investors overwhelmingly are searching in the range of $200k to $3M, as you'd expect. Because this data is up to 20 years old and it isn't adjusted for inflation, the actual costs in the present are probably a bit larger.</p>
+
+			<h3>Question 3: How far our of their price range have buyers been pushed, and which income levels are most out of their price range?</h3>
+
+			<ul>This question will be difficult to answer without income and population data, and I don't see any in our A2 datasets. However, it's not impossible to get some ideas.
+			<li>We have data on the proportion of the price made with a mortgage.</li>
+			<li>We can see if the locations of homes being sold changes over time.</li>
+			<li>Even if we don't know how many people can afford (for example) $1M home, we can plot a view of the world from the perspective of someone who can afford such a home. We can then compare those outlooks from different home cost bins and see how it has changed over time.</li>
+			</ul>
+
+			<p>I'm going to try the third option.</p>
+
+			<figure>
+				<img src="3 Share of Property.png" alt="" />
+				<figcaption>
+				This plot shows the share of each price range in the residential market over time. The vertical axis represents the count of homes, and the horizontal is the time. Bins are $500k in size, and labelled is the bottom of the bin. You can see that homes worth less than $500k have all but vanished, while homes in the $1M to $3M have increased in popularity over time.
+				</figcaption>
+			</figure>
+
+			<p>There's a lot that's wrong with this plot — I left it in as exposition for the next plots, which I like a lot more. You can't get any understanding of the homes worth more than a few million; there's no color scale because there are actually hundreds of distinct bins.</p>
+
+			<figure>
+				<img src="3 Compare Investors.png" alt="" />
+				<figcaption>
+				Here the vertical axis (again) represents a count of homes, and the horizontal axis is time, like the previous chart. The charts are separated by investment demand and non-investment demand. Obseve that the vertical axes are consistently sized, so you can compare across facets. Pay close attention to the key — these bins are of varying size.
+				</figcaption>
+			</figure>
+
+			<p>Here I manually binned the prices into reasonable ranges. These choices are a little arbitrary, but a logarithmic scale or linearly spaced bins wouldn't be appropriate. I think these numbers are relatively round, so that will help with comprehension. I think this chart is an improvement on the previous one: you can clearly see the decline in the amount of cheap houses purchased by non-investors. You can additionally see how investors tend to purchase mostly homes in the $2M+ range.</p>
+
+			<p>I think this graph is misleading however. The $10M+ residential purchases are a tiny sliver at the bottom of the 'investor' table, but those properties probably represent a huge share of the actual livable units — it might include apartment complexes, for example. I want to see if I can adjust this chart to display the number of units (homes, rooms) faithfully. I have data on the number of bedrooms in a house, but there's $7.4 billion in 0-bedroom residential purchases, $6.5 billion of which are investment properties — these are probably the apartments we're looking for.</p>
+
+			<figure>
+				<img src="3 Bedrooms.png" alt="" />
+				<figcaption>
+				This is the same chart as above except, instead of counting addresses, rooms are counted on the vertical axis. You can see that the more expensive properties are more represented than in the previous chart, as they tend to have more rooms.
+				</figcaption>
+			</figure>
+
+			<p>
+			I think this chart could still use some work. The Y axis is interesting but unintuitive, as it's not unreasonable to think (for example) that a $2M building with 10 bedrooms might be affordable, rather than luxury, housing. Hence, we're mixing together luxury and non-luxury housing into the same bin. The share of expensive investment properties increases a little, but ultimately this chart is not all that different in the inferences you'd draw from the previous one. I would like to have a way to deal with the 0-bedroom buildings — I suspect those house a huge portion of the city, but I can't think of anything.
+			</p>
+
+		</section>
+
+		<section>
+			<h2>Summary</h2>
+
+			<p>
+			To summarize, the share of residential demand attributable to investors is substantial (in the range of 30 to 50%) seems to increase over time. Investor purchases skew toward higher-priced properties — this can include luxury housing and large apartment buildings. Lower-cost residential properties have declined, which suggests that affordability is an issue, especially for people in low income brackets. Ambiguity in the metadata wround investor type and land use are a limitation of this analysis.
+			</p>
+			<p>A good future question would be to try to distinguish what share of rooms are owned by investment — we can't distinguish this with the current data because many investment residentail properties have 0 rooms.</p>
+		</section>
+	</main>
+</body>
+</html>
